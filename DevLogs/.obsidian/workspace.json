@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "MA_2025_10_12.md",
+                "file": "MA_2025_10_13.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "MA_2025_10_12"
+              "title": "MA_2025_10_13"
             }
           }
         ]
@@ -74,8 +74,7 @@
               "title": "书签"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
@@ -171,5 +170,9 @@
     }
   },
   "active": "21117598f6aed215",
-  "lastOpenFiles": []
+  "lastOpenFiles": [
+    "MA_2025_10_12.md",
+    "MA_2025_10_13.md",
+    "新建 文本文档.txt"
+  ]
 }

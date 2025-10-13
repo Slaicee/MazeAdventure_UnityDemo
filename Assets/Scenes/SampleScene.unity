@@ -135,8 +135,9 @@ GameObject:
   - component: {fileID: 322559509}
   - component: {fileID: 322559508}
   - component: {fileID: 322559512}
+  - component: {fileID: 322559513}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Player
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -241,10 +242,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MoveSpeed: 5
-  RotationSpeed: 100
+  RotationSpeedX: 100
+  RotationSpeedY: 80
   PlayerCamera: {fileID: 0}
   MaxLookAngle: 80
   MinLookAngle: -80
+--- !u!114 &322559513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 322559506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f820ed5082618542969a46920139911, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  width: 21
+  height: 21
+  wallPrefab: {fileID: 1916561697257453093, guid: 48b6bdde58f872648bc6da65bff307f2, type: 3}
 --- !u!1 &705507993
 GameObject:
   m_ObjectHideFlags: 0
@@ -447,7 +464,10 @@ MonoBehaviour:
   player: {fileID: 322559511}
   offset: {x: 0, y: 2, z: -7}
   LookAtOffset: {x: 0, y: 1.5, z: 0}
-  RotationSmoothTime: 0.1
+  sensitivityY: 80
+  rotationSmoothTime: 0.1
+  minPitch: -45
+  maxPitch: 45
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
