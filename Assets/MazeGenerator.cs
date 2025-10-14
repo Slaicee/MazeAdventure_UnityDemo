@@ -1,45 +1,73 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class MazeGenerator : MonoBehaviour
 {
-    public int width = 15;   // ÃÔ¹¬¿í¶È
-    public int height = 15;  // ÃÔ¹¬¸ß¶È
-    public GameObject wallPrefab; // Ç½ÌåÔ¤ÖÆ¼ş£¨Cube£©
+    [Header("è¿·å®«å‚æ•°")]
+    public int width = 51;          // å¥‡æ•°
+    public int height = 51;         // å¥‡æ•°
+    public float wallHeight = 2f;   // å¢™ä½“é«˜åº¦
 
-    int[,] maze; // 0 Í¨Â·, 1 Ç½±Ú
+    [Header("é¢„åˆ¶ä½“")]
+    public GameObject wallPrefab;    // å¢™ä½“é¢„åˆ¶ä»¶
+    public Material groundMaterial;  // åœ°é¢æè´¨
+    public GameObject playerPrefab;  // ç©å®¶ Cube
+
+    private int[,] maze;             // 0 é€šè·¯, 1 å¢™å£
+    private GameObject mazeParent;   // è¿·å®«çˆ¶å¯¹è±¡
+    private GameObject player;
 
     void Start()
     {
-        GenerateMazeData();
-        BuildMaze();
+        GenerateMaze();
+        SpawnPlayer();
     }
 
-    // Step 1£ºÉú³ÉÒ»¸ö¼òµ¥µÄÃÔ¹¬Êı¾İ
-    void GenerateMazeData()
+    //è¿·å®«ç”Ÿæˆ
+    void GenerateMaze()
     {
+        // æ¸…ç©ºæ—§è¿·å®«
+        if (mazeParent != null) Destroy(mazeParent);
+        mazeParent = new GameObject("MazeParent");
+
         maze = new int[width, height];
 
-        // ³õÊ¼»¯ÎªÇ½
+        // åˆå§‹åŒ–ä¸ºå…¨å¢™
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
                 maze[x, y] = 1;
 
-        // ´Ó (1,1) ¿ªÊ¼ÍÚÍ¨Â·
+        // ä» (1,1) å¼€å§‹æŒ–é€šè¿·å®«
         Dig(1, 1);
+
+        // ç”Ÿæˆå¢™ä½“
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                if (maze[x, y] == 1)
+                {
+                    Vector3 pos = new Vector3(x, wallHeight / 2f, y);
+                    GameObject wall = Instantiate(wallPrefab, pos, Quaternion.identity, mazeParent.transform);
+                    wall.transform.localScale = new Vector3(1, wallHeight, 1); // é«˜åº¦å¯è°ƒ
+                }
+            }
+        }
+
+        // ç”Ÿæˆåœ°é¢
+        GenerateGround();
     }
 
-    // µİ¹éÍÚÍ¨Â·£¨Éî¶ÈÓÅÏÈ£©
     void Dig(int x, int y)
     {
         maze[x, y] = 0;
 
-        // ËÄ¸ö·½ÏòËæ»ú´òÂÒ
+        // å››ä¸ªæ–¹å‘éšæœº
         int[] dirs = { 0, 1, 2, 3 };
         System.Random rand = new System.Random();
         for (int i = 0; i < dirs.Length; i++)
         {
             int j = rand.Next(i, dirs.Length);
-            (dirs[i], dirs[j]) = (dirs[j], dirs[i]);//Ï´ÅÆËã·¨
+            (dirs[i], dirs[j]) = (dirs[j], dirs[i]);
         }
 
         foreach (int dir in dirs)
@@ -47,41 +75,59 @@ public class MazeGenerator : MonoBehaviour
             int dx = 0, dy = 0;
             switch (dir)
             {
-                case 0: dx = 0; dy = 1; break;   // ÉÏ
-                case 1: dx = 1; dy = 0; break;   // ÓÒ
-                case 2: dx = 0; dy = -1; break;  // ÏÂ
-                case 3: dx = -1; dy = 0; break;  // ×ó
+                case 0: dx = 0; dy = 2; break;   // ä¸Š
+                case 1: dx = 0; dy = -2; break;  // ä¸‹
+                case 2: dx = 2; dy = 0; break;   // å³
+                case 3: dx = -2; dy = 0; break;  // å·¦
             }
 
-            int nx = x + dx * 2;
-            int ny = y + dy * 2;
+            int nx = x + dx;
+            int ny = y + dy;
 
-            // ÅĞ¶ÏÊÇ·ñÔ½½çÇÒÎ´ÍÚÍ¨
-            if (nx > 0 && ny > 0 && nx < width - 1 && ny < height - 1 && maze[nx, ny] == 1)
+            if (nx > 0 && nx < width - 1 && ny > 0 && ny < height - 1 && maze[nx, ny] == 1)
             {
-                // ´òÍ¨ÖĞ¼äµÄÇ½
-                maze[x + dx, y + dy] = 0;
+                maze[x + dx / 2, y + dy / 2] = 0;
                 Dig(nx, ny);
             }
         }
     }
 
-    // Step 2£º°ÑÃÔ¹¬Êı¾İ±ä³ÉÁ¢·½Ìå
-    void BuildMaze()
+    void GenerateGround()
     {
-        GameObject mazeParent = new GameObject("Maze");
+        GameObject ground = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        ground.name = "Ground";
+        ground.transform.position = new Vector3(width / 2f - 0.5f, 0f, height / 2f - 0.5f);
+        ground.transform.localScale = new Vector3(width / 10f, 1, height / 10f);
 
-        for (int x = 0; x < width; x++)
+        if (groundMaterial != null)
+            ground.GetComponent<Renderer>().material = groundMaterial;
+
+        ground.transform.parent = mazeParent.transform;
+    }
+
+    //ç©å®¶ç”Ÿæˆ
+    void SpawnPlayer()
+    {
+        if (playerPrefab == null) return;
+
+        int startX = 1;
+        int startY = 1;
+
+        if (maze[startX, startY] != 0)
         {
-            for (int y = 0; y < height; y++)
-            {
-                if (maze[x, y] == 1)
-                {
-                    Vector3 pos = new Vector3(x, 0.5f, y);
-                    GameObject wall = Instantiate(wallPrefab, pos, Quaternion.identity);
-                    wall.transform.parent = mazeParent.transform;
-                }
-            }
+            Debug.LogWarning("[1,1] ä¸æ˜¯ç©ºæ ¼ï¼Œæ— æ³•ç”Ÿæˆç©å®¶");
+            return;
         }
+
+        // è·å– Cube é«˜åº¦ï¼ˆscale.yï¼‰å¹¶è®¡ç®— Y åæ ‡
+        float cubeHeight = playerPrefab.transform.localScale.y;
+        float cubeHalfHeight = cubeHeight / 2f;
+
+        // X/Z åç§»ï¼Œé¿å…ä¸å¢™ä½“é‡å 
+        float offset = 0.01f;
+
+        Vector3 startPos = new Vector3(startX + offset, cubeHalfHeight, startY + offset);
+
+        player = Instantiate(playerPrefab, startPos, Quaternion.identity);
     }
 }
