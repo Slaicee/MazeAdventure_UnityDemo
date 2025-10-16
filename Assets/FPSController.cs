@@ -5,7 +5,7 @@ public class FPSPlayerController : MonoBehaviour
 {
     [Header("移动设置")]
     public float moveSpeed = 2f;      // 移动速度
-    public float lookSensitivity = 50f; // 鼠标灵敏度
+    public float lookSensitivity = 80f; // 鼠标灵敏度
 
     [Header("相机设置")]
     public Transform playerCamera;    // 挂在玩家头部的相机

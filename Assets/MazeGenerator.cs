@@ -1,25 +1,32 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class MazeGenerator : MonoBehaviour
 {
     [Header("迷宫参数")]
-    public int width = 51;          // 奇数
-    public int height = 51;         // 奇数
+    public int width = 21;          // 奇数
+    public int height = 21;         // 奇数
     public float wallHeight = 2f;   // 墙体高度
+
+    [Header("场景玩家引用")]
+    public GameObject player;
 
     [Header("预制体")]
     public GameObject wallPrefab;    // 墙体预制件
     public Material groundMaterial;  // 地面材质
-    public GameObject playerPrefab;  // 玩家 Cube
+    
+
+    [Header("出口")]
+    public GameObject exitPrefab;
 
     private int[,] maze;             // 0 通路, 1 墙壁
     private GameObject mazeParent;   // 迷宫父对象
-    private GameObject player;
 
     void Start()
     {
         GenerateMaze();
         SpawnPlayer();
+        SpawnExit();
     }
 
     //迷宫生成
@@ -108,7 +115,11 @@ public class MazeGenerator : MonoBehaviour
     //玩家生成
     void SpawnPlayer()
     {
-        if (playerPrefab == null) return;
+        if (player == null)
+        {
+            Debug.LogWarning("请在 Inspector 中指定 Player 对象");
+            return;
+        }
 
         int startX = 1;
         int startY = 1;
@@ -120,14 +131,70 @@ public class MazeGenerator : MonoBehaviour
         }
 
         // 获取 Cube 高度（scale.y）并计算 Y 坐标
-        float cubeHeight = playerPrefab.transform.localScale.y;
+        float cubeHeight = player.transform.localScale.y;
         float cubeHalfHeight = cubeHeight / 2f;
 
-        // X/Z 偏移，避免与墙体重叠
+        // X/Z 偏移，避免卡墙
         float offset = 0.01f;
 
+        // 设置玩家位置
         Vector3 startPos = new Vector3(startX + offset, cubeHalfHeight, startY + offset);
-
-        player = Instantiate(playerPrefab, startPos, Quaternion.identity);
+        player.transform.position = startPos;
     }
+
+    //BFS函数
+    (Vector2Int farthestCell, int distance) FindFarthestCell()
+    {
+        Queue<Vector2Int> q = new Queue<Vector2Int>();
+        bool[,] visited = new bool[width, height];
+        int[,] dist = new int[width, height];
+
+        q.Enqueue(new Vector2Int(1, 1));
+        visited[1, 1] = true;
+        dist[1, 1] = 0;
+
+        Vector2Int farthest = new Vector2Int(1, 1);
+
+        while (q.Count > 0)
+        {
+            var cur = q.Dequeue();
+            int x = cur.x, y = cur.y;
+
+            foreach (var d in new (int, int)[] { (1, 0), (-1, 0), (0, 1), (0, -1) })
+            {
+                int nx = x + d.Item1;
+                int ny = y + d.Item2;
+
+                if (nx > 0 && nx < width && ny > 0 && ny < height && !visited[nx, ny] && maze[nx, ny] == 0)
+                {
+                    visited[nx, ny] = true;
+                    dist[nx, ny] = dist[x, y] + 1;
+                    q.Enqueue(new Vector2Int(nx, ny));
+
+                    if (dist[nx, ny] > dist[farthest.x, farthest.y])
+                        farthest = new Vector2Int(nx, ny);
+                }
+            }
+        }
+        return (farthest, dist[farthest.x, farthest.y]);
+    }
+    //生成出口
+    void SpawnExit()
+    {
+        if (exitPrefab == null)
+        {
+            Debug.LogWarning("未设置出口预制体（exitPrefab）");
+            return;
+        }
+
+        var (exitCell, distance) = FindFarthestCell();
+        float offset = 0.01f;
+        float heightOffset = exitPrefab.transform.localScale.y / 2f;
+
+        Vector3 pos = new Vector3(exitCell.x + offset, heightOffset, exitCell.y + offset);
+        Instantiate(exitPrefab, pos, Quaternion.identity, mazeParent.transform);
+
+        Debug.Log($"出口位置：({exitCell.x},{exitCell.y})，距离起点 {distance}");
+    }
+
 }
