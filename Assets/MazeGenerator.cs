@@ -4,8 +4,8 @@ using UnityEngine;
 public class MazeGenerator : MonoBehaviour
 {
     [Header("迷宫参数")]
-    public int width = 51;          // 奇数
-    public int height = 51;         // 奇数
+    public int width = 31;          // 奇数
+    public int height = 31;         // 奇数
     public float wallHeight = 1.2f;   // 墙体高度
 
     [Header("场景玩家引用")]
@@ -189,7 +189,7 @@ public class MazeGenerator : MonoBehaviour
 
         var (exitCell, distance) = FindFarthestCell();
         float offset = 0.01f;
-        float heightOffset = exitPrefab.transform.localScale.y / 2f;
+        float heightOffset = exitPrefab.transform.localScale.y;
 
         Vector3 pos = new Vector3(exitCell.x + offset, heightOffset, exitCell.y + offset);
         Instantiate(exitPrefab, pos, Quaternion.identity, mazeParent.transform);
